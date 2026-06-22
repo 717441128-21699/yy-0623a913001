@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -21,5 +21,5 @@ def confirm_collate(request: OrderCollateRequest, db: Session = Depends(get_db))
     service = CollateService(db)
     result = service.confirm_collate(request)
     if not result.success:
-        return ApiResponse(code=400, message="部分项目未确认", data=result)
+        return ApiResponse(code=400, message="部分项目未确认", data=result, success=False)
     return ApiResponse(data=result, message="整理完成")

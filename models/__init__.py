@@ -3,6 +3,7 @@ from .product import Product
 from .organization import Clinic
 from .order import Order, OrderItem, OrderStatus, OrderSource
 from .delivery import DeliveryHandover, DeliveryUrgency
+from .auxiliary import OrderImage, OperationLog, OrderImageStatus
 
 __all__ = [
     "Base",
@@ -13,5 +14,8 @@ __all__ = [
     "OrderStatus",
     "OrderSource",
     "DeliveryHandover",
-    "DeliveryUrgency"
+    "DeliveryUrgency",
+    "OrderImage",
+    "OperationLog",
+    "OrderImageStatus"
 ]

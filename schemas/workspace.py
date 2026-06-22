@@ -1,5 +1,6 @@
 import enum
 from .base import BaseSchema
+from .auxiliary import OperationLog
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import date, datetime
@@ -71,7 +72,7 @@ class StockOutProcessRequest(BaseModel):
 
 class ReplyGenerateRequest(BaseModel):
     order_id: int
-    stock_out_items: List[StockOutItem]
+    stock_out_items: Optional[List[StockOutItem]] = None
     reply_template: Optional[str] = None
 
 
@@ -79,6 +80,17 @@ class ReplyGenerateResponse(BaseModel):
     order_id: int
     reply_content: str
     summary: str
+
+
+class DeliveryStockOutInfo(BaseModel):
+    product_name: str
+    specification: str
+    stock_out_quantity: float
+    alternative_product_name: Optional[str] = None
+    alternative_spec: Optional[str] = None
+    expected_restock_date: Optional[date] = None
+    split_delivery: bool = False
+    process_remark: Optional[str] = None
 
 
 class DeliveryHandoverBase(BaseSchema):
@@ -96,6 +108,8 @@ class DeliveryHandoverBase(BaseSchema):
 class DeliveryHandover(DeliveryHandoverBase):
     id: int
     status: str = "pending"
+    stock_out_info: List[DeliveryStockOutInfo] = Field(default_factory=list)
+    operation_logs: List[OperationLog] = Field(default_factory=list)
     printed_at: Optional[datetime] = None
     packed_by: Optional[str] = None
     packed_at: Optional[datetime] = None
@@ -112,3 +126,4 @@ class DeliveryHandoverUpdate(BaseModel):
     driver_note: Optional[str] = None
     status: Optional[str] = None
     operator: Optional[str] = None
+    remark: Optional[str] = None

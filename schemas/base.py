@@ -18,6 +18,7 @@ class ApiResponse(BaseModel, Generic[T]):
     code: int = Field(default=0, description="响应码，0表示成功")
     message: str = Field(default="success", description="响应消息")
     data: Optional[T] = Field(default=None, description="响应数据")
+    success: bool = Field(default=True, description="是否成功")
 
 
 class PaginationParams(BaseModel):

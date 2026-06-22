@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List
 from sqlalchemy.orm import Session
 import re
 import jieba
@@ -8,7 +8,10 @@ from schemas import (
     OrderCollateRequest, OrderCollateResponse, CollateItem,
     OrderItemCreate
 )
-from services import ProductService, OrderService
+from services.product_service import ProductService
+from services.order_service import OrderService
+from services.auxiliary_service import OperationLogService
+from exceptions import OrderNotFoundException, OrderEmptyException
 
 
 class CollateService:
@@ -16,8 +19,11 @@ class CollateService:
         self.db = db
         self.product_service = ProductService(db)
         self.order_service = OrderService(db)
+        self.log_service = OperationLogService(db)
 
     def _split_raw_content(self, raw_content: str) -> List[str]:
+        if not raw_content:
+            return []
         raw_content = raw_content.replace(" ", "")
         separators = [r'[、,，;；\n\r]+', r'[和与及]+']
         temp = raw_content
@@ -67,21 +73,13 @@ class CollateService:
     def pre_collate(self, order_id: int) -> OrderCollateResponse:
         order = self.order_service.get_by_id(order_id)
         if not order:
-            return OrderCollateResponse(
-                order_id=order_id,
-                items=[],
-                warnings=["订单不存在"],
-                success=False
-            )
+            raise OrderNotFoundException(order_id)
 
-        raw_items = self._split_raw_content(order.raw_content)
+        content_for_parse = order.ocr_content or order.raw_content
+        raw_items = self._split_raw_content(content_for_parse)
+
         if not raw_items:
-            return OrderCollateResponse(
-                order_id=order_id,
-                items=[],
-                warnings=["未能从原始内容中解析出明细项"],
-                success=False
-            )
+            raise OrderEmptyException(f"订单 {order_id} 未解析出有效明细，请检查原始内容或OCR识别文本")
 
         collate_items = []
         warnings = []
@@ -107,12 +105,10 @@ class CollateService:
     def confirm_collate(self, request: OrderCollateRequest) -> OrderCollateResponse:
         order = self.order_service.get_by_id(request.order_id)
         if not order:
-            return OrderCollateResponse(
-                order_id=request.order_id,
-                items=[],
-                warnings=["订单不存在"],
-                success=False
-            )
+            raise OrderNotFoundException(request.order_id)
+
+        if not request.items:
+            raise OrderEmptyException("确认的订单项不能为空")
 
         unconfirmed = []
         order_items = []
@@ -157,6 +153,14 @@ class CollateService:
             OrderStatus.PENDING_STOCK_CHECK,
             operator=request.operator
         )
+
+        self.log_service.create_log(
+            order_id=request.order_id,
+            operation_type="collate_confirm",
+            operation_content=f"订单整理完成，共{len(order_items)}项",
+            operator=request.operator
+        )
+        self.db.commit()
 
         return OrderCollateResponse(
             order_id=request.order_id,

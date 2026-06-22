@@ -12,6 +12,7 @@ from api import (
     stock_router,
     delivery_router
 )
+from exceptions import register_exception_handlers
 
 
 @asynccontextmanager
@@ -23,9 +24,11 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description="面向牙科供应商客服团队的后端订单协同服务，提供订单整理、缺货回复、配送交接三个工作区",
-    version="1.0.0",
+    version="1.1.0",
     lifespan=lifespan
 )
+
+register_exception_handlers(app)
 
 app.add_middleware(
     CORSMiddleware,
@@ -40,7 +43,7 @@ app.add_middleware(
 async def root():
     return {
         "name": settings.PROJECT_NAME,
-        "version": "1.0.0",
+        "version": "1.1.0",
         "docs": "/docs",
         "api_prefix": settings.API_V1_STR
     }

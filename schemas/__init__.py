@@ -8,8 +8,9 @@ from .workspace import (
     OrderCollateRequest, OrderCollateResponse, CollateItem,
     StockOutItem, StockOutResponse, StockOutProcessRequest,
     DeliveryHandover, DeliveryHandoverUpdate, DeliveryUrgency,
-    ReplyGenerateRequest, ReplyGenerateResponse
+    ReplyGenerateRequest, ReplyGenerateResponse, DeliveryStockOutInfo
 )
+from .auxiliary import OrderImage, OrderImageCreate, OperationLog, OperationLogCreate
 
 __all__ = [
     "Product", "ProductCreate", "ProductUpdate", "ProductMatchResult",
@@ -19,5 +20,6 @@ __all__ = [
     "OrderCollateRequest", "OrderCollateResponse", "CollateItem",
     "StockOutItem", "StockOutResponse", "StockOutProcessRequest",
     "DeliveryHandover", "DeliveryHandoverUpdate", "DeliveryUrgency",
-    "ReplyGenerateRequest", "ReplyGenerateResponse"
+    "ReplyGenerateRequest", "ReplyGenerateResponse", "DeliveryStockOutInfo",
+    "OrderImage", "OrderImageCreate", "OperationLog", "OperationLogCreate"
 ]
